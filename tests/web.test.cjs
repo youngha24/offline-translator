@@ -52,7 +52,7 @@ const FAKE = () => { window.__OT_WORKER__ = () => { const w = { onmessage: null,
   ctx = await b.newContext({ ...devices["iPhone 14 Pro Max"] });
   pg = await ctx.newPage(); await pg.goto(base);
   await pg.waitForFunction(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; }, null, { timeout: 30000 });
-  const cached = await pg.evaluate(async () => { const c = await caches.open("ot-shell-1"); return (await c.keys()).length; });
+  const cached = await pg.evaluate(async () => { const c = await caches.open("ot-shell-2"); return (await c.keys()).length; });
   ok(cached >= 12, "보관 파일 " + cached + "개(화면·엔진 21MB 포함)");
   await ctx.setOffline(true); await pg.reload();
   ok(await pg.isVisible("#src") && (await pg.textContent("#status")).length > 0, "비행기 모드에서 앱 열림");

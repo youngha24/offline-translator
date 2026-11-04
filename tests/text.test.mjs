@@ -9,4 +9,5 @@ t("긴 문장 자르기(280자 이하)", () => { const s = ("word ".repeat(200))
 t("중국어 문장", () => assert.deepEqual(splitText("你好。我很好！").map(p => p.text), ["你好。", "我很好！"]));
 t("잇기: 영어는 빈칸, 일본어는 붙임", () => { const p = splitText("가. 나."); assert.equal(joinParts(p, ["A.", "B."], "en"), "A. B."); assert.equal(joinParts(p, ["あ。", "い。"], "ja"), "あ。い。"); });
 t("잇기: 중국어 원문 → 영어는 빈칸", () => { const p = splitText("你好。我很好！"); assert.equal(joinParts(p, ["Hi.", "I'm fine!"], "en"), "Hi. I'm fine!"); });
+t("일본어 글자 사이 빈칸 지움", () => assert.equal(joinParts(splitText("가"), ["レストランを 紹介してください"], "ja"), "レストランを紹介してください"));
 t("빈 입력", () => assert.deepEqual(splitText(""), []));

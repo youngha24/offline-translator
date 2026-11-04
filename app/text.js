@@ -41,7 +41,9 @@ export function splitText(input) {
 
 export function joinParts(parts, translated, target) {
   const cjk = target === "ja" || target === "zh";
-  return parts.map((p, i) => (translated[i] || "") + (p.join === " " && cjk ? "" : p.join === "" && !cjk && i < parts.length - 1 ? " " : p.join)).join("").trim();
+  const out = parts.map((p, i) => (translated[i] || "") + (p.join === " " && cjk ? "" : p.join === "" && !cjk && i < parts.length - 1 ? " " : p.join)).join("").trim();
+  // 모델이 일본어·중국어 글자 사이에 넣는 빈칸 지우기(«を 紹介» → «を紹介»)
+  return cjk ? out.replace(/([\u3000-\u30ff\u3400-\u9fff\uff00-\uffef])[ \t]+(?=[\u3000-\u30ff\u3400-\u9fff\uff00-\uffef])/g, "$1") : out;
 }
 
 export function fmtBytes(n) {
