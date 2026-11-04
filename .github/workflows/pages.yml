@@ -1,0 +1,31 @@
+name: pages
+# 화면만 공개(무료 GitHub Pages). 번역은 아이폰 안에서 — 서버 없음, 키 없음.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.dep.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 시험(글 나누기·언어 코드)
+        run: node tests/text.test.mjs
+      - name: 공개 묶음 검사 — 개인 주소·키 흔적이 있으면 중단
+        run: |
+          if grep -rIlE '(100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.[0-9]+\.[0-9]+|192\.168\.|ts\.net|sk-ant-|ghp_|github_pat_|@gmail\.com)' app/; then echo "::error::공개하면 안 되는 문자열"; exit 1; fi
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app
+      - id: dep
+        uses: actions/deploy-pages@v4
