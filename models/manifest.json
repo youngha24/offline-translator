@@ -1,0 +1,158 @@
+{
+ "model": "nllb-7",
+ "dtype": "q8",
+ "external": true,
+ "files": [
+  {
+   "path": "config.json",
+   "size": 838,
+   "parts": [
+    {
+     "path": "config.json.part00",
+     "size": 838,
+     "sha256": "617a0adcfb08d569b39640e97585ed404f237ed5ea690db0a383ca5d26f5944f"
+    }
+   ]
+  },
+  {
+   "path": "generation_config.json",
+   "size": 189,
+   "parts": [
+    {
+     "path": "generation_config.json.part00",
+     "size": 189,
+     "sha256": "1ce846259ae04c572ae1863e358534bbc376ff3d3f100b1494feda6200b51de8"
+    }
+   ]
+  },
+  {
+   "path": "tokenizer.json",
+   "size": 3430947,
+   "parts": [
+    {
+     "path": "tokenizer.json.part00",
+     "size": 3430947,
+     "sha256": "33ebdfa8ef70d1065c9cd039ff13c95629241ddd36994cbe179d3041d8a99490"
+    }
+   ]
+  },
+  {
+   "path": "tokenizer_config.json",
+   "size": 363,
+   "parts": [
+    {
+     "path": "tokenizer_config.json.part00",
+     "size": 363,
+     "sha256": "df03f2e2014996196728c6a1217f71d1d94ca02144286bdfeef2906f9d33a187"
+    }
+   ]
+  },
+  {
+   "path": "special_tokens_map.json",
+   "size": 281,
+   "parts": [
+    {
+     "path": "special_tokens_map.json.part00",
+     "size": 281,
+     "sha256": "2aa68f6c42226e27557b98c9181687adba257faec7482187812062aa0874fb19"
+    }
+   ]
+  },
+  {
+   "path": "onnx/encoder_model_quantized.onnx",
+   "size": 4585672,
+   "parts": [
+    {
+     "path": "onnx/encoder_model_quantized.onnx.part00",
+     "size": 4585672,
+     "sha256": "6716a0968fdb3b638d4665aba83af507c21a689fd49ffe3591f138ce0aa3aa3a"
+    }
+   ]
+  },
+  {
+   "path": "onnx/decoder_model_merged_quantized.onnx",
+   "size": 10111303,
+   "parts": [
+    {
+     "path": "onnx/decoder_model_merged_quantized.onnx.part00",
+     "size": 10111303,
+     "sha256": "e1e48cd64e72e33282e0335920a570e579ad35b7921b7226696da95331ebc72f"
+    }
+   ]
+  },
+  {
+   "path": "onnx/encoder_model_quantized.onnx_data",
+   "size": 200040192,
+   "parts": [
+    {
+     "path": "onnx/encoder_model_quantized.onnx_data.part00",
+     "size": 41943040,
+     "sha256": "73e26431df9ed8dbfef90c26fed8c5f5735659252e0205d3f4fb93c54c02ba3e"
+    },
+    {
+     "path": "onnx/encoder_model_quantized.onnx_data.part01",
+     "size": 41943040,
+     "sha256": "12093fbe1a4106c395217eef95e95303a399589b990e64888d8d8a24176420c1"
+    },
+    {
+     "path": "onnx/encoder_model_quantized.onnx_data.part02",
+     "size": 41943040,
+     "sha256": "cd57857499c665e0b6a80b2eb4a7668f77e98f0787c0d01e582610086b30287a"
+    },
+    {
+     "path": "onnx/encoder_model_quantized.onnx_data.part03",
+     "size": 41943040,
+     "sha256": "909bf5a2c2d4e35d525937892b9125afe1a9b55f08f7587038179c7994803d91"
+    },
+    {
+     "path": "onnx/encoder_model_quantized.onnx_data.part04",
+     "size": 32268032,
+     "sha256": "45bf64ef72085ba7580631d7d170b2e4133b589f9a44ff8dce0936cee62dfe9d"
+    }
+   ]
+  },
+  {
+   "path": "onnx/decoder_model_merged_quantized.onnx_data",
+   "size": 279705600,
+   "parts": [
+    {
+     "path": "onnx/decoder_model_merged_quantized.onnx_data.part00",
+     "size": 41943040,
+     "sha256": "271e25cdc477a346cfa005e1618efb532a2c51d1a8c864617e51a46b5707ad00"
+    },
+    {
+     "path": "onnx/decoder_model_merged_quantized.onnx_data.part01",
+     "size": 41943040,
+     "sha256": "ce3ba22bda8f0fd15877c7acc85b60f6f581bbacb62c20e580d03c16e3cfbf97"
+    },
+    {
+     "path": "onnx/decoder_model_merged_quantized.onnx_data.part02",
+     "size": 41943040,
+     "sha256": "e185e9dd7807fbde96bd46e7d3e941a7a5f27a96bb5c5b845c3e870bdfa915b3"
+    },
+    {
+     "path": "onnx/decoder_model_merged_quantized.onnx_data.part03",
+     "size": 41943040,
+     "sha256": "effe7f7da976f4d58c747752db143db8e63204a09c68d819f7f7a2daf0b748fe"
+    },
+    {
+     "path": "onnx/decoder_model_merged_quantized.onnx_data.part04",
+     "size": 41943040,
+     "sha256": "486bbbf524d3ad68d850bbd9c951b22fbee53860eec4286ea50d876247588dac"
+    },
+    {
+     "path": "onnx/decoder_model_merged_quantized.onnx_data.part05",
+     "size": 41943040,
+     "sha256": "14298a6d92226bf6bc0aeb855b1b3a75a9291f6fa5bcda629bfe4f0a7aa17e02"
+    },
+    {
+     "path": "onnx/decoder_model_merged_quantized.onnx_data.part06",
+     "size": 28047360,
+     "sha256": "af6c486db87abbc9932bf9e80b1e5ca8d8dcbbea68cef25d615f8dfe00dbc395"
+    }
+   ]
+  }
+ ],
+ "total": 497875385,
+ "version": "f06c6263b8da"
+}

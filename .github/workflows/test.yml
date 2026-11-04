@@ -1,0 +1,22 @@
+name: test
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 단위시험(문장 나누기·SHA-256)
+        run: node --test tests/split.test.mjs tests/sha256.test.mjs
+      - name: 모델 조각 검사(크기·sha256·100MB)
+        run: python3 tools/verify_models.py
+      - name: 화면·오프라인·메모리 시험
+        run: |
+          npx --yes playwright@1.49.1 install --with-deps chromium
+          npm i --no-save playwright@1.49.1
+          node tests/e2e.cjs models ci
+          node tests/mem.cjs models ci

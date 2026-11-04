@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>오프라인 번역</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="번역">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181c" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>오프라인 번역</h1>
+  <span id="net" class="pill" hidden>오프라인</span>
+</header>
+
+<section id="setup" class="card" hidden>
+  <h2>처음 한 번만 모델 받기</h2>
+  <p id="setupInfo">번역 모델을 이 기기에 저장합니다. 받은 뒤에는 인터넷 없이 동작합니다. 와이파이에서 받으세요.</p>
+  <button id="dl" class="primary">모델 받기</button>
+  <div id="dlBox" hidden>
+    <progress id="dlBar" max="1" value="0"></progress>
+    <p id="dlText" class="muted"></p>
+  </div>
+</section>
+
+<main id="app" hidden>
+  <div class="langs">
+    <select id="src" aria-label="원문 언어"></select>
+    <button id="swap" class="icon" aria-label="언어 바꾸기"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+    <select id="tgt" aria-label="번역 언어"></select>
+  </div>
+  <textarea id="input" rows="5" placeholder="번역할 글을 입력하세요" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea>
+  <div class="row">
+    <button id="clear" class="ghost">지우기</button>
+    <button id="go" class="primary" disabled>번역</button>
+  </div>
+  <div id="outBox" class="card out">
+    <div id="output" aria-live="polite"></div>
+    <div class="row end"><button id="copy" class="ghost" disabled>복사</button></div>
+  </div>
+  <p id="status" class="muted"></p>
+</main>
+
+<footer>
+  <p id="store" class="muted"></p>
+  <details>
+    <summary>정보</summary>
+    <p class="muted">모델: Meta NLLB-200 distilled 600M (CC-BY-NC 4.0, 비상업 용도) — 한국어·영어·일본어·중국어·베트남어·몽골어·스페인어만 남기도록 낱말표를 줄이고 양자화한 판입니다.
+    엔진: transformers.js (Apache-2.0) · ONNX Runtime Web (MIT). 입력한 글은 기기 밖으로 나가지 않습니다(외부 연결 차단).</p>
+    <button id="reset" class="ghost danger">저장된 모델 지우기</button>
+  </details>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
