@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="번역">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#14532d">
+<title>오프라인 번역</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{--bg:#f6f7f5;--card:#fff;--ink:#1b1f1c;--mu:#66706a;--ac:#15803d;--ac2:#dcfce7;--line:#dfe3df;--warn:#b45309}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1311;--card:#181d1a;--ink:#e8ece9;--mu:#9aa49e;--ac:#4ade80;--ac2:#13301f;--line:#2a312d;--warn:#f59e0b}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;-webkit-text-size-adjust:100%}
+body{padding:calc(env(safe-area-inset-top) + 8px) 12px calc(env(safe-area-inset-bottom) + 12px)}
+header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+header h1{font-size:18px;margin:0;flex:1}
+.tabs{display:flex;gap:4px;background:var(--line);padding:3px;border-radius:10px}
+.tabs button{border:0;background:transparent;color:var(--ink);padding:6px 12px;border-radius:8px;font-size:14px}
+.tabs button[aria-pressed=true]{background:var(--card);font-weight:600}
+#status{font-size:13px;color:var(--mu);margin:4px 0 10px;min-height:20px}
+#status.warn{color:var(--warn)}
+.bar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+select{flex:1;min-width:0;font-size:16px;padding:9px 8px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+button{font:inherit;cursor:pointer}
+.icon{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 11px;font-size:16px;line-height:1}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
+textarea{width:100%;border:0;outline:0;resize:none;background:transparent;color:var(--ink);font-size:18px;min-height:110px}
+.out{font-size:19px;min-height:80px;white-space:pre-wrap;word-break:break-word}
+.out.pending{color:var(--mu)}
+.row{display:flex;gap:6px;justify-content:flex-end;align-items:center;margin-top:6px}
+.row .meta{flex:1;font-size:12px;color:var(--mu)}
+.primary{background:var(--ac);color:#fff;border:0;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:600;width:100%}
+.primary:disabled{opacity:.5}
+progress{width:100%;height:8px;margin-top:6px}
+.hint{font-size:13px;color:var(--mu);margin:6px 2px}
+#history h2{font-size:14px;color:var(--mu);margin:14px 2px 6px}
+#history .item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px;font-size:14px}
+#history .item small{color:var(--mu)}
+/* 대화 모드: 위쪽은 상대방이 마주 보고 읽도록 뒤집는다 */
+#talk{display:none;flex-direction:column;gap:8px;height:calc(100dvh - 120px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+#talk .side{flex:1;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:0}
+#talk .side.them{transform:rotate(180deg)}
+#talk .side .out{flex:1;overflow:auto;font-size:22px}
+#talk .side textarea{min-height:56px;font-size:17px;border-top:1px solid var(--line);padding-top:6px}
+#talk .side .who{font-size:12px;color:var(--mu)}
+body.talking #main{display:none}
+body.talking #talk{display:flex}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌐 번역</h1>
+  <div class="tabs" role="group" aria-label="모드">
+    <button id="tabMain" aria-pressed="true">번역</button>
+    <button id="tabTalk" aria-pressed="false">대화</button>
+  </div>
+</header>
+<div id="status">준비 중…</div>
+<div id="setup" hidden>
+  <button id="getModel" class="primary">번역 모델 받기 (약 0.9GB · 처음 한 번만 · 와이파이 권장)</button>
+  <progress id="prog" max="1" value="0" hidden></progress>
+  <p class="hint">받은 뒤에는 비행기 모드에서도 번역됩니다. 번역하는 글은 이 아이폰 밖으로 나가지 않습니다.</p>
+</div>
+
+<main id="main">
+  <div class="bar">
+    <select id="src" aria-label="원문 언어"></select>
+    <button id="swap" class="icon" aria-label="언어 바꾸기">⇄</button>
+    <select id="tgt" aria-label="번역 언어"></select>
+  </div>
+  <div class="box">
+    <textarea id="input" placeholder="여기에 입력하거나 붙여 넣으세요. 말로 하려면 키보드의 🎤 받아쓰기를 누르세요." autocapitalize="off" autocomplete="off"></textarea>
+    <div class="row"><span class="meta" id="count"></span><button id="paste" class="icon" aria-label="붙여넣기">📋</button><button id="clear" class="icon" aria-label="지우기">✕</button></div>
+  </div>
+  <div class="box">
+    <div id="output" class="out" aria-live="polite"></div>
+    <div class="row"><span class="meta" id="took"></span><button id="speak" class="icon" aria-label="읽어 주기">🔊</button><button id="copy" class="icon" aria-label="복사">⧉</button><button id="save" class="icon" aria-label="기록에 남기기">☆</button></div>
+  </div>
+  <section id="history"></section>
+</main>
+
+<section id="talk" aria-label="대화 모드">
+  <div class="side them">
+    <div class="who" id="themWho"></div>
+    <div class="out" id="themOut"></div>
+    <textarea id="themIn" placeholder="Type here"></textarea>
+  </div>
+  <div class="bar" style="margin:0"><select id="talkLang" aria-label="상대 언어"></select><button id="talkSpeak" class="icon" aria-label="상대에게 읽어 주기">🔊</button></div>
+  <div class="side me">
+    <div class="who">나 (한국어)</div>
+    <div class="out" id="meOut"></div>
+    <textarea id="meIn" placeholder="여기에 한국어로 입력(🎤 받아쓰기 가능)"></textarea>
+  </div>
+</section>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "offline-translator",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node tests/text.test.mjs" }
+}
