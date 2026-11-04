@@ -6,10 +6,13 @@ const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/ja
 const srv = http.createServer((q, s) => { let p = decodeURIComponent(q.url.split("?")[0]); if (p.endsWith("/")) p += "index.html";
   fs.readFile(path.join(ROOT, p), (e, b) => { if (e) { s.writeHead(404); return s.end(); } s.writeHead(200, { "Content-Type": TYPES[path.extname(p)] || "application/octet-stream" }); s.end(b); }); });
 let fails = 0; const ok = (c, n) => { console.log((c ? "ok " : "FAIL ") + n); if (!c) fails++; };
-const FAKE = () => { window.__OT_WORKER__ = () => { const w = { onmessage: null, postMessage(m) {
+const FAKE = () => { window.__calls = 0; window.__OT_WORKER__ = () => { const latest = {}; const w = { onmessage: null, postMessage(m) {
   const send = (d) => setTimeout(() => w.onmessage({ data: d }), 20);
   if (m.type === "load") { send({ type: "progress", loaded: 5e8, total: 9e8 }); setTimeout(() => send({ type: "ready" }), 60); }
-  if (m.type === "translate") send({ type: "result", id: m.id, text: `[${m.tgt}]${m.text}`, ms: 120 });
+  if (m.type === "cancel") latest[m.ch] = Math.max(latest[m.ch] || 0, m.gen);
+  if (m.type === "translate") { latest[m.ch] = Math.max(latest[m.ch] || 0, m.gen); setTimeout(() => {
+    if (m.gen < latest[m.ch]) return w.onmessage({ data: { type: "skip", id: m.id } });
+    window.__calls++; w.onmessage({ data: { type: "result", id: m.id, text: `[${m.tgt}]${m.text}`, ms: 120 } }); }, 40); }
 } }; return w; }; };
 (async () => {
   await new Promise(r => srv.listen(0, r)); const base = `http://127.0.0.1:${srv.address().port}/`;
@@ -19,17 +22,36 @@ const FAKE = () => { window.__OT_WORKER__ = () => { const w = { onmessage: null,
   let pg = await ctx.newPage(); const errs = []; pg.on("pageerror", e => errs.push(e.message));
   await pg.addInitScript(FAKE); await pg.goto(base);
   ok(await pg.isVisible("#getModel"), "처음엔 «모델 받기» 단추");
-  await pg.fill("#input", "안녕하세요. 반갑습니다."); await pg.waitForTimeout(900);
+  await pg.selectOption("#src", "ko"); await pg.fill("#input", "안녕하세요. 반갑습니다."); await pg.waitForTimeout(900);
   ok((await pg.textContent("#output")).includes("모델 받기"), "모델 없으면 안내");
   await pg.click("#getModel"); await pg.waitForSelector("#setup", { state: "hidden" });
-  await pg.waitForFunction(() => document.querySelector("#output").textContent.includes("[eng_Latn]"));
+  await pg.waitForFunction(() => document.querySelector("#output").className === "out");
   ok(await pg.textContent("#output") === "[eng_Latn]안녕하세요. [eng_Latn]반갑습니다.", "문장별 번역·잇기");
-  await pg.selectOption("#tgt", "mn"); await pg.waitForFunction(() => document.querySelector("#output").textContent.includes("khk_Cyrl"));
+  await pg.selectOption("#tgt", "mn"); await pg.waitForFunction(() => document.querySelector("#output").className === "out" && document.querySelector("#output").textContent.includes("khk_Cyrl"));
   ok(true, "몽골어(khk_Cyrl) 선택");
   await pg.click("#save"); ok((await pg.textContent("#history")).includes("안녕하세요"), "☆ 기록 남기기");
   await pg.click("#swap"); ok(await pg.inputValue("#src") === "mn" && (await pg.inputValue("#input")).includes("khk_Cyrl"), "⇄ 바꾸기(번역문이 입력으로)");
+  await pg.waitForTimeout(900);
+  // 자동 감지: 한국어 → 고른 외국어 · 외국어 → 한국어
+  await pg.selectOption("#src", "auto"); await pg.selectOption("#tgt", "ja");
+  await pg.fill("#input", "감사합니다"); await pg.waitForFunction(() => document.querySelector("#output").textContent === "[jpn_Jpan]감사합니다");
+  ok((await pg.textContent("#detected")).includes("한국어"), "자동 감지: 한국어 → 일본어");
+  await pg.fill("#input", "Thank you very much"); await pg.waitForFunction(() => document.querySelector("#output").textContent === "[kor_Hang]Thank you very much");
+  ok(true, "자동 감지: 영어 → 한국어");
+  // 번역 기억: 같은 글은 모델을 다시 부르지 않음
+  const before = await pg.evaluate(() => window.__calls);
+  await pg.fill("#input", "감사합니다"); await pg.waitForFunction(() => document.querySelector("#took").textContent.includes("기억"));
+  ok(await pg.evaluate(() => window.__calls) === before, "번역 기억: 다시 번역 안 함");
+  // 빠르게 고쳐 쓰면 옛 요청은 버림
+  await pg.fill("#input", "하나"); await pg.waitForTimeout(650); await pg.fill("#input", "둘셋"); await pg.waitForTimeout(1200);
+  ok(await pg.textContent("#output") === "[jpn_Jpan]둘셋", "고쳐 쓴 글만 결과로");
+  // 기록 지우기 · 글자 크기
+  await pg.click("#save"); const n1 = await pg.locator("#history .item").count(); await pg.click("#history .del >> nth=0");
+  ok(await pg.locator("#history .item").count() === n1 - 1, "☆ 기록 하나 지우기");
+  await pg.click("#size"); ok(await pg.evaluate(() => document.body.classList.contains("big")), "글자 크게");
   const over = await pg.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1); ok(!over, "가로 넘침 없음(430px)");
   await pg.screenshot({ path: path.join(__dirname, "shot_main.png") });
+  await pg.click("#size");
   await pg.click("#tabTalk"); await pg.fill("#meIn", "화장실이 어디예요?"); await pg.waitForTimeout(900);
   ok((await pg.textContent("#themOut")).startsWith("[eng_Latn]"), "대화: 나 → 상대 언어");
   await pg.fill("#themIn", "Over there"); await pg.waitForTimeout(900);
@@ -52,7 +74,7 @@ const FAKE = () => { window.__OT_WORKER__ = () => { const w = { onmessage: null,
   ctx = await b.newContext({ ...devices["iPhone 14 Pro Max"] });
   pg = await ctx.newPage(); await pg.goto(base);
   await pg.waitForFunction(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; }, null, { timeout: 30000 });
-  const cached = await pg.evaluate(async () => { const c = await caches.open("ot-shell-2"); return (await c.keys()).length; });
+  const cached = await pg.evaluate(async () => { const c = await caches.open("ot-shell-3"); return (await c.keys()).length; });
   ok(cached >= 12, "보관 파일 " + cached + "개(화면·엔진 21MB 포함)");
   await ctx.setOffline(true); await pg.reload();
   ok(await pg.isVisible("#src") && (await pg.textContent("#status")).length > 0, "비행기 모드에서 앱 열림");

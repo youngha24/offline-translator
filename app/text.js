@@ -46,6 +46,26 @@ export function joinParts(parts, translated, target) {
   return cjk ? out.replace(/([\u3000-\u30ff\u3400-\u9fff\uff00-\uffef])[ \t]+(?=[\u3000-\u30ff\u3400-\u9fff\uff00-\uffef])/g, "$1") : out;
 }
 
+// 글자 모양으로 언어 짐작(자동 감지) — 모델 없이 즉시. 확실하지 않으면 null.
+export function detectLang(text) {
+  const s = String(text || "").slice(0, 400);
+  const count = (re) => (s.match(re) || []).length;
+  const hangul = count(/[가-힣ㄱ-ㆎ]/g), kana = count(/[぀-ヿ]/g), han = count(/[㐀-鿿]/g),
+    cyr = count(/[Ѐ-ӿ]/g), latin = count(/[A-Za-zÀ-ɏḀ-ỿ]/g);
+  const total = hangul + kana + han + cyr + latin;
+  if (!total) return null;
+  if (hangul / total > 0.3) return "ko";
+  if (kana > 0 && (kana + han) / total > 0.3) return "ja";
+  if (han / total > 0.3) return "zh";
+  if (cyr / total > 0.3) return "mn";
+  if (latin / total > 0.5) {
+    if (/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(s)) return "vi";
+    if (/[¿¡ñ]/i.test(s) || /\b(el|la|los|las|que|por|para|está|gracias|hola|dónde|cómo)\b/i.test(s)) return "es";
+    return "en";
+  }
+  return null;
+}
+
 export function fmtBytes(n) {
   if (!n) return "0MB";
   return n >= 1e9 ? (n / 1e9).toFixed(2) + "GB" : Math.round(n / 1e6) + "MB";

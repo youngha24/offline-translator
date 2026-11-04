@@ -1,5 +1,5 @@
 // 앱 화면·번역 엔진 파일을 기기에 보관 → 비행기 모드에서도 열린다. (모델은 transformers.js 가 자체 캐시에 보관)
-const CACHE = "ot-shell-2";
+const CACHE = "ot-shell-3";
 const SHELL = ["./", "index.html", "app.js", "text.js", "worker.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png",
   "vendor/transformers.min.js", "vendor/ort-wasm-simd-threaded.jsep.mjs", "vendor/ort-wasm-simd-threaded.jsep.wasm"];
 
